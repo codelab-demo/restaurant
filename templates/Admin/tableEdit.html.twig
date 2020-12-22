@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container">
+        {%  include('Admin/adminMenu.html.twig') %}
+        <section class="page-header page-header-modern page-header-md bg-transparent mb-0 pb-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 align-self-center p-static order-2 text-center">
+                        <h1 class="text-10 text-color-dark my-3">Table modify</h1>
+                        <hr class="custom-divider my-0">
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="d-flex justify-content-center mb-5">
+            <form class="edit-form" method="POST" style="width:350px">
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                <div class="form-row">
+                    <div class="form-group col">
+                        <label class="font-weight-bold text-dark text-2" for="name">Table name</label>
+                        <input id="name" type="text" value="{{ table.name }}" data-msg-required="Please provide correct name." maxlength="10" class="form-control" name="name" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <label class="font-weight-bold text-dark text-2" for="persons">Number of Persons</label>
+                        <input style="width:100px;" id="persons" type="text" value="{{ table.numberOfPersons }}" data-msg-required="Please provide correct number of persons." maxlength="10" class="form-control" name="persons" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <label class="font-weight-bold text-dark text-2" for="minPersons">Minimum number of persons</label>
+                        <input style="width:100px;" id="minPersons" type="text" value="{{ table.minNumberOfPersons }}" data-msg-required="Please provide correct minimum number of persons." maxlength="10" class="form-control" name="minPersons" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <p class="text-3"><strong>Table type:</strong></p>
+                        <div class="btn-group-toggle" data-toggle="buttons">
+                            <label class="btn btn-outline btn-primary mb-2">
+                                <input type="radio" name="table" autocomplete="off" value="chef" {% if table.isChef %} checked="checked" {% endif %}> Chef table
+                            </label>
+                            <label class="btn btn-outline btn-primary mb-2">
+                                <input type="radio" name="table" autocomplete="off" value="family" {% if table.isFamily %}checked="checked" {% endif %}> Family table
+                            </label>
+                            <label class="btn btn-outline btn-primary mb-2">
+                                <input type="radio" name="table" autocomplete="off" value="standard" {% if  not table.isFamily and not table.isChef %}checked="checked" {% endif %}> Standard table
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <input type="hidden" name="token" value="{{ csrf_token( table.id ) }}">
+                        <input type="submit" value="Save changes" class="btn btn-primary btn-modern" data-loading-text="Loading...">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{  parent() }}
+
+
+{% endblock %}

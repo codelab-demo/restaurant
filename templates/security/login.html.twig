@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <form class="form-signin" method="post">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% if error %}
+
+            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        <h2 class="text-10 text-color-dark my-3">Please sign in</h2>
+        <label for="inputUsername" class="sr-only">Username</label>
+        <input type="text" name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus>
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}"/>
+        <div class="checkbox mb-3">
+            <label>
+                <input type="checkbox" id="remember_me" name="_remember_me"> Remember me
+            </label>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">
+            Sign in
+        </button>
+    </form>
+    <hr class="custom-divider my-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 align-self-center p-static order-2 text-center">
+                <p class="text-3">For demo use following data:</p>
+                <p class="text-3">Username: <strong>admin</strong><br/>Password: <strong>admin</strong></p>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container">
+        {%  include('Admin/adminMenu.html.twig') %}
+
+        <section class="page-header page-header-modern page-header-md bg-transparent mb-0 pb-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 align-self-center p-static order-2 text-center">
+                        <h1 class="text-10 text-color-dark my-3">Menu list</h1>
+                        <hr class="custom-divider my-0">
+                        {% for message in app.flashes('success') %}
+                            <div class="alert alert-success">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                        {% for message in app.flashes('error') %}
+                            <div class="alert alert-danger">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Category
+                </th>
+                <th>
+                    Price
+                </th>
+                <th>
+                    Type
+                </th>
+                <th>
+                    Special
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in menu %}
+                <tr>
+                    <td>
+                        {{ item.name }}
+                    </td>
+                    <td>
+                        {{ item.category }}
+                    </td>
+                    <td>
+                        ${{ item.price }}
+                    </td>
+                    <td>
+                        {% if item.special is not null %}
+                            {{ daysOfWeek[item.special] }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ path('app_admin_menu_edit', {'id':item.id}) }}"><button type="button" class="btn btn-info btn-sm">Edit</button></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

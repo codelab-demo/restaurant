@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container">
+        {%  include('Admin/adminMenu.html.twig') %}
+        <section class="page-header page-header-modern page-header-md bg-transparent mb-0 pb-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 align-self-center p-static order-2 text-center">
+                        <h1 class="text-10 text-color-dark my-3">Add reservation position</h1>
+                        <hr class="custom-divider my-0">
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="d-flex justify-content-center mb-5">
+            <form class="edit-form" method="POST">
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                <div class="form-row">
+                    <div class="form-group col">
+                        <select class="selectMenu" name="item" style="width:300px;">
+
+                            <option></option>
+                            {% for key, item in menuItems %}
+                                <optgroup label="{{ key }}">
+                                    {% for key1 in item %}
+                                        <option value="{{ key1.id }}" data-price="{{ key1.price }}">{{ key1.name }}</option>
+                                    {%  endfor %}
+                                </optgroup>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-lg-6">
+                        <label class="font-weight-bold text-dark text-2" for="quantity">Quantity</label>
+                        <input style="width:100px;" id="quantity" value="1" type="text" data-msg-required="Please provide correct quantity." maxlength="10" class="form-control" name="quantity" required>
+                    </div>
+                    <div class="form-group col-lg-6">
+                        <label class="font-weight-bold text-dark text-2" for="quantity">Price per item</label>
+                        <input style="width:100px;" id="price" type="text" data-msg-required="Please provide correct quantity." maxlength="10" class="form-control" name="price" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <input type="hidden" name="token" value="{{ csrf_token( id ) }}">
+                        <input type="submit" value="Save changes" class="btn btn-primary btn-modern" data-loading-text="Loading...">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    $(document).ready(function() {
+        $('.selectMenu').select2({
+            placeholder: "Select a meal"
+        });
+
+        $('.selectMenu').on('select2:select', function (e) {
+            var data = e.params.data;
+            var price = $('.selectMenu').find(':selected').data('price');
+            $('#price').val(price);
+        });
+    });
+
+</script>
+{% endblock %}

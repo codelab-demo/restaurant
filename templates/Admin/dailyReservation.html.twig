@@ -1,0 +1,121 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div role="main" class="main">
+<div class="container">
+    {%  include('Admin/adminMenu.html.twig') %}
+
+    <section class="page-header page-header-modern page-header-md bg-transparent mb-0 pb-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 align-self-center p-static order-2 text-center">
+                    <h1 class="text-10 text-color-dark my-3">Daily reservations</h1>
+                    <p class="text-3">Reservation list for: <strong> {{ date|date('jS F') }}</strong></p>
+
+                    <p class="text-5"><strong>Select date:</strong> <span id="datepicker" class="fa fa-calendar open-datetimepicker"></span></p>
+                    <hr class="custom-divider my-0">
+                    {% for message in app.flashes('success') %}
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>
+                Table
+            </th>
+            <th>
+                16:00
+            </th>
+            <th>
+                18:00
+            </th>
+            <th>
+                20:00
+            </th>
+            <th>
+                22:00
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for key, day in dailyReservations %}
+        <tr>
+            <td>
+                {{ day.name }}
+            </td>
+            <td>
+                {% if(day['16:00'] is defined) %}
+                <a class="text-decoration-none" href="{{ path('app_admin_reservation_details', {hash: day['16:00']['hash']}) }}"><div class="{{ day['16:00']['status']|lower  }} pl-4 text-white">Persons: {{ day['16:00']['persons'] }}</div></a>
+                {% else %}
+                     {%  if (date()|date('Y-m-d')  <  date(dayDate)|date('Y-m-d')) or  (date()|date('Y-m-d')  ==  date(dayDate)|date('Y-m-d') and "now"|date('H:i', 'Europe/Paris') < date(dayDate)|date_modify("+16 hours")|date("H:i")) %}
+                         <a class="text-decoration-none" href="{{ path('app_admin_reservation_add', {'date':date(dayDate)|date('d-m-Y'), 'time': date(dayDate)|date_modify("+16 hours")|date("H:i"), 'table':  key}) }}"><div class="text-center"><i class="fas fa-2x fa-plus-square"></i></div></a>
+                     {% endif %}
+                {% endif %}
+            </td>
+            <td>
+                {% if(day['18:00'] is defined) %}
+                    <a class="text-decoration-none" href="{{ path('app_admin_reservation_details', {hash: day['18:00']['hash']}) }}"><div class="{{ day['18:00']['status']|lower  }} pl-4 text-white">Persons: {{ day['18:00']['persons'] }}</div></a>
+                {% else %}
+                    {%  if date()|date('Y-m-d')  <  date(dayDate)|date('Y-m-d') or  (date()|date('Y-m-d')  ==  date(dayDate)|date('Y-m-d') and "now"|date('H:i', 'Europe/Paris') < date(dayDate)|date_modify("+18 hours")|date("H:i")) %}
+                        <a class="text-decoration-none" href="{{ path('app_admin_reservation_add', {'date':date(dayDate)|date('d-m-Y'), 'time': date(dayDate)|date_modify("+18 hours")|date("H:i"), 'table':  key}) }}"><div class="text-center"><i class="fas fa-2x fa-plus-square"></i></div></a>
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>
+                {% if(day['20:00'] is defined) %}
+                    <a class="text-decoration-none" href="{{ path('app_admin_reservation_details', {hash: day['20:00']['hash']}) }}"><div class="{{ day['20:00']['status']|lower  }} pl-4 text-white">Persons: {{ day['20:00']['persons'] }}</div></a>
+                {% else %}
+                     {%  if date()|date('Y-m-d')  <  date(dayDate)|date('Y-m-d') or  (date()|date('Y-m-d')  ==  date(dayDate)|date('Y-m-d') and "now"|date('H:i', 'Europe/Paris') < date(dayDate)|date_modify("+20 hours")|date("H:i")) %}
+                        <a class="text-decoration-none" href="{{ path('app_admin_reservation_add', {'date':date(dayDate)|date('d-m-Y'), 'time': date(dayDate)|date_modify("+20 hours")|date("H:i"), 'table':  key}) }}"><div class="text-center"><i class="fas fa-2x fa-plus-square"></i></div></a>
+                     {% endif %}
+                {% endif %}
+            </td>
+            <td>
+                {% if(day['22:00'] is defined) %}
+                    <a class="text-decoration-none" href="{{ path('app_admin_reservation_details', {hash: day['22:00']['hash']}) }}"><div class="{{ day['22:00']['status']|lower  }} pl-4 text-white">Persons: {{ day['22:00']['persons'] }}</div></a>
+                {% else %}
+
+                    {%  if date()|date('Y-m-d')  <  date(dayDate)|date('Y-m-d') or  (date()|date('Y-m-d')  ==  date(dayDate)|date('Y-m-d') and "now"|date('H:i', 'Europe/Paris') < date(dayDate)|date_modify("+22 hours")|date("H:i")) %}
+                         <a class="text-decoration-none" href="{{ path('app_admin_reservation_add', {'date':date(dayDate)|date('d-m-Y'), 'time': date(dayDate)|date_modify("+22 hours")|date("H:i"), 'table':  key}) }}"><div class="text-center"><i class="fas fa-2x fa-plus-square"></i></div></a>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+{% endblock %}
+    {% block javascripts %}
+    {{ parent() }}
+
+    <script>
+        $(document).ready(function(){
+           var picker = new Pikaday({
+           field: $('#datepicker')[0],
+           format: "DD.MM.YYYY",
+           // minDate: moment().subtract(10, 'days').toDate(),
+           maxDate: moment().add(14, 'days').toDate(),
+           onSelect: function() {
+            var date = moment(this.getDate()).format('DD-MM-YYYY');
+            window.location.replace("/admin/reservations/"+date);
+           }
+           });
+        });
+
+    </script>
+
+    {% endblock %}

@@ -1,0 +1,29 @@
+<div class="container">
+    <div class="row mt-5 mb-4">
+        <div class="col-lg-12 text-center">
+            <h4 class="mt-4 mb-2">Special <strong>Menu</strong></h4>
+            <p>Each day comes with special, unique dish.  With special meal you will receive a small desert and degustation glasses of our own wines.</p>
+
+            <hr class="custom-divider">
+
+            <ul class="special-menu pb-5">
+                {% for pos in specials %}
+                    <li>
+                        <img src="img/menu/{{ pos.image }}" class="img-fluid" alt="">
+                        <h3>{{ days[pos.special] }} <em>Special</em></h3>
+                        <p><span>{{ pos.name }}</span></p>
+                        <strong class="special-menu-price text-color-dark">${{ pos.price }}</strong>
+                    </li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+</div>
+{% if app.request.get('_route') == 'app_index' %}
+<div class="row mb-0 mt-5">
+    <div class="col-lg-12 text-center">
+        <a href="{{ path('app_menu') }}" class="btn btn-primary btn-lg mb-5">Full Menu</a>
+    </div>
+</div>
+{% endif %}

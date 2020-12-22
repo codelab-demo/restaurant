@@ -1,0 +1,121 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container">
+        {%  include('Admin/adminMenu.html.twig') %}
+        <section class="page-header page-header-modern page-header-md bg-transparent mb-0 pb-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 align-self-center p-static order-2 text-center">
+                        <h1 class="text-10 text-color-dark my-3">Menu modify</h1>
+                        <hr class="custom-divider my-0">
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="d-flex justify-content-center mb-5">
+            <form class="edit-form" method="POST" style="width:350px" enctype="multipart/form-data">
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                <div class="form-row">
+                    <div class="form-group col">
+                        <label class="font-weight-bold text-dark text-2" for="name">Meal name</label>
+                        <input id="name" type="text" value="{{ menu.name }}" data-msg-required="Please provide correct name." maxlength="10" class="form-control" name="name" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <label class="font-weight-bold text-dark text-2" for="price">Price</label>
+                        <input style="width:100px;" id="price" type="text" value="{{ menu.price }}" data-msg-required="Please provide correct pricee." maxlength="10" class="form-control" name="price" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <label class="font-weight-bold text-dark text-2" for="description">Description</label>
+                        <textarea style="height:150px;" id="description" type="text" data-msg-required="Please provide correct minimum number of persons." class="form-control" name="description" required>{{ menu.description }}</textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <select class="selectMenu" name="category" style="width:100%;">
+
+
+                            {% for i in categories %}
+                                <option value="{{ i }}" {% if i == menu.category %} selected {% endif %}>{{ i }}</option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">
+                        <p class="text-3"><strong>Special:</strong></p>
+
+                        <div class="btn-group-toggle" data-toggle="buttons">
+                            {% for key, item in daysOfWeek %}
+                            <label class="btn btn-outline btn-primary mb-2">
+                                <input type="radio" name="special" autocomplete="off" value="{{ key }}" {% if menu.special == key %} checked="checked" {% endif %}>{{ item }}</label>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <label class="font-weight-bold text-dark text-2">Image:<br/>
+                        {% if menu.image %}
+                            <img id="imagePreview" style="width:200px;" src="/img/menu/{{ asset( menu.image ) }}"/>
+                        {% endif %}
+                        </label>
+                        <input class="d-block" type="file" name="image" id="image">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col">
+                        <input type="hidden" name="token" value="{{ csrf_token( menu.id ) }}">
+                        <input type="submit" value="Save changes" class="btn btn-primary btn-modern" data-loading-text="Loading...">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function() {
+            $('.selectMenu').select2({
+                placeholder: "Select a category",
+                minimumResultsForSearch: Infinity
+            });
+
+            $('.selectMenu').on('select2:select', function (e) {
+                var data = e.params.data;
+                var price = $('.selectMenu').find(':selected').data('price');
+                $('#price').val(price);
+            });
+
+            function readURL(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        console.log(e.target.result);
+                        $('#imagePreview').attr('src', e.target.result);
+                    }
+
+                    reader.readAsDataURL(input.files[0]); // convert to base64 string
+                }
+            }
+            $("#image").change(function() {
+                readURL(this);
+            });
+        });
+
+    </script>
+{% endblock %}

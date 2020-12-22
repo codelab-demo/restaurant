@@ -1,0 +1,385 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div role="main" class="main">
+        <section class="page-header page-header-modern page-header-md bg-transparent mb-0 pb-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 align-self-center p-static order-2 text-center">
+                        <h1 class="text-10 text-color-dark my-3">Table reservation system</h1>
+                        <p class="text-3">If you want to make a table reservation please fill bellowed form.<br/> It will allow us to prepare for your arrival</p>
+                        <hr class="custom-divider my-0">
+                        <h3>We are using some colors to mark informations:</h3>
+                        <div class="marks" style="">
+                            <p>Items marked with <span class="bg-danger text-white p-1">this</span> color mean that reservation in this day, this time or this table is no more available. </p>
+
+                            <p >Tables marked with <span class="bg-success text-white p-1" >this</span> color are standard tables for max 4 persons</p>
+
+                            <p>Tables marked with <span class="text-white p-1" style="background-color:#007bff">this</span> color are family tables for max 6 persons, but minimum for 3 persons</p>
+                            <p>Tables marked with <span class="bg-warning text-dark p-1">this</span> color are private chef's tables, we will add an additional 15% fee to your bill</p>
+
+                            </p>
+
+
+                        </div>
+                        <hr class="custom-divider my-0">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-default mb-0">
+            <div class="row">
+                <div class="cont date">
+                    <div class="col-md-12 align-self-center p-static order-2 text-center">
+                        <h1 class="text-10 text-color-dark my-3">Select date</h1>
+                        <p class="text-3">Choose a date for your arrival</p>
+                        <hr class="custom-divider my-0">
+                    </div>
+
+                    <div class="funkyradio d-flex justify-content-center">
+                        {% for key, day in listOfDays %}
+                        <div class=" ">
+                            <input type="radio" data-token="{{ csrf_token( key ) }}" name="reservationDay" id="reservation_day_{{ loop.index }}" {% if  day =="no"  %} disabled {% else %} value="{{ key }}" {% endif %}/>
+                            <label for="reservation_day_{{ loop.index }}">{{ key|date("jS F")  }} {% if day =="no" %}<br/>All tables reserved{% endif %}</label>
+                        </div>
+                        {%  endfor %}
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row time" style="display:none;">
+                <div class="cont">
+                    <div class="col-md-12 align-self-center p-static order-2 text-center">
+                        <h1 class="text-10 text-color-dark my-3">Select time</h1>
+                        <p class="text-3">Choose a time for your arrival<br/>We welcome guests in two hours slots</p>
+                        <hr class="custom-divider my-0">
+                    </div>
+                    <div class="funkyradio times d-flex justify-content-center">
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+            <div class="row plan justify-content-center" style="display:none;">
+                <div class="col-md-12 align-self-center p-static order-2 text-center">
+                    <h1 class="text-10 text-color-dark my-3">Select table</h1>
+                    <hr class="custom-divider my-0">
+                    <img src="img/Floor_Plan.svg" style="width:50%">
+                </div>
+
+            </div>
+
+            <div class="row table" style="display:none;">
+
+                <div class="cont">
+                    <div class="col-md-12 align-self-center p-static order-2 text-center">
+
+                        <p class="text-3"></p>
+                        <hr class="custom-divider my-0">
+                    </div>
+                    <div class="funkyradio tables col-12  d-flex justify-content-center" >
+
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row person" style="display:none;">
+                <div class="cont">
+                    <div class="col-md-12 align-self-center p-static order-2 text-center">
+                        <h1 class="text-10 text-color-dark my-3">Number of persons</h1>
+                        <p class="text-3">Please tell us how many guest we will have</p>
+                        <hr class="custom-divider my-0">
+                    </div>
+                    <div class="funkyradio persons d-flex justify-content-center">
+
+                    </div>
+
+
+                </div>
+
+            </div>
+            <div class="contact" style="display:none">
+                <div class="col-md-12 align-self-center p-static order-2 text-center">
+                    <h1 class="text-10 text-color-dark my-3">Reservation summary</h1>
+
+                    <hr class="custom-divider my-0">
+                </div>
+                <div style="margin-left: 30%;">
+
+                    Date: <span id="result_date"></span><br/>
+                    Time: <span id="result_time"></span><br/>
+                    Table: <span id="result_table"></span><br/>
+                    Persons: <span id="result_persons"></span><br/><br/>
+                </div>
+                <div class="chef_info d-flex justify-content-center">
+                    <div class="card border-width-3 border-radius-0" style="border-color:#ffc107;">
+                        <div class="card-body text-center">
+                            <p class="text-color-dark text-4-5 mb-0">You have choosen chef table.<br/>We will add an additional 15% fee to your bill.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 align-self-center p-static order-2 text-center">
+                    <h1 class="text-10 text-color-dark my-3">Contact details</h1>
+                    <p class="text-3">Please provide us your contact details.<br/>We may need this to contact with you in some cases</p>
+                    <hr class="custom-divider my-0">
+                    <div class="funkyradio  d-flex justify-content-center" >
+                    </div>
+                    <div class="d-flex justify-content-center" >
+                        <form>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Contact Name</label>
+                                <input type="text" class="form-control" id="name" placeholder="First and last name" required>
+
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Contact Phone</label>
+                                <input type="text" class="form-control" id="phone" placeholder="Phone number" required>
+                            </div>
+                            <div class="col-md-12 align-self-center p-static order-2 text-center">
+                                <h1 class="text-10 text-color-dark my-3">Confirm reservation</h1>
+
+                                <hr class="custom-divider my-0">
+                                <div class="funkyradio  d-flex justify-content-center" >
+                                </div>
+                                <button type="button" id="reservation" class="btn btn-primary">Send a reservation</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Error</h5>
+                </div>
+                <div class="modal-body" id="modal_body">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset("/js/custom.js") }}"></script>
+    <script>
+        $(document).ready(function(){
+
+            $(document).ready(function(){
+                $.protip();
+            });
+
+            // $(".date").find("input").click(function() {
+            $('body').on('click', '.date input', function(e){
+                $.ajax({
+                    url: "{{ path('time_checker') }}",
+                    type: "POST",
+                    contentType: "application/json",
+                    beforeSend: function () {
+                        $('input[name="person"]').prop('checked', false);
+                        $("#result_persons").html('');
+                        $('input[name="table"]').prop('checked', false);
+                        $("#result_table").html('');
+                        $("#result_time").html('');
+                        showLaoder($('.times'), $('.times').height());
+                        if($('.time').is(':hidden')){
+                            $(".time").show();
+                            $('html, body').animate({
+                                scrollTop: $(".time").offset().top-70
+                            }, 500);
+                        }
+                    },
+                    data: JSON.stringify( { "date": $(this).val(), "token":$(this).data('token') } ),
+                    success: function(result){
+
+                        try {
+                            $('.times').html('');
+                            $.each(result, function(i, item) {
+                                console.log();
+                                $('.times').append('<div>\n'+
+                                    '<input type="radio" name="time" id="time_'+i+'" '+
+                                    (item.free === 'yes' ? 'value="'+item.time+'" ': 'disabled')+
+                                    ' required />\n'+
+                                    '<label for="time_'+i+'">'+item.time+
+                                    (item.free === 'no' ? ': No free tables': '') +
+                                    '</label>\n'+
+                            '</div>')
+
+                            });
+
+
+
+                        } catch (e) {
+                            console.log(e, typeof result);
+                            alert('An error has occurred. Please try again, if the error still persists, please contact us.'); // error in the above string (in this case, yes)!
+                        } finally {
+
+                        }
+                    }
+                });
+
+
+
+
+                $("#result_date").html($("label[for='"+$(this).attr("id")+"']").text());
+
+            });
+
+            $('body').on('click', '.time input', function(e){
+                var selectedDay = $('input[name="reservationDay"]:checked');
+
+                $.ajax({
+                    url: "{{ path('table_checker') }}",
+                    type: "POST",
+                    contentType: "application/json",
+                    beforeSend: function () {
+                        $("#result_persons").html('');
+                        $('input[name="table"]').prop('checked', false);
+                        $("#result_table").html('');
+                        showLaoder($('.tables'), $('.tables').height());
+                        if($('.table').is(':hidden')){
+                            $(".plan").show();
+                            $(".table").show();
+                            $('html, body').animate({
+                                scrollTop: $(".plan").offset().top-70
+                            }, 500);
+                        }
+
+                    },
+                    data: JSON.stringify( { "time": $(this).val(), "date":selectedDay.val(), "token":selectedDay.data('token') } ),
+                    success: function(result){
+
+                        try {
+                            $('.tables').html('');
+
+                            $.each(result, function(i, item) {
+
+                                if(item.free === 'no') {
+                                    item.tableName = '#'+i+' - reserved';
+                                }
+                                $('.tables').append('<div class="'+item.type+'">\n'+
+                                    '<input type="radio" name="table" id="table_'+i+'" '+
+                                    (item.free === 'yes' ? 'value="'+i+'" data-max="'+item.numberOfPersons+'" data-min="'+item.minNumberOfPersons+'" ': 'disabled')+
+
+                                    ' required/>\n'+
+                                    '<label for="table_'+i+'" '+
+                                    (item.free === 'yes' ? 'class="protip" data-pt-scheme="black" data-pt-position="top"  data-pt-title="'+item.tooltip+'"': '')+
+                                    '>'+item.tableName+
+                                    '</label>\n'+
+                                    '</div>')
+
+                            });
+
+
+
+                        } catch (e) {
+                            console.log(e, typeof result);
+                            alert('An error has occurred. Please try again, if the error still persists, please contact us.'); // error in the above string (in this case, yes)!
+                        } finally {
+
+                        }
+                    }
+                });
+
+
+                $("#result_time").html($("label[for='"+$(this).attr("id")+"']").text());
+            });
+
+
+            $("body").on('click', '.tables input', function(e){
+                $("#result_persons").html('');
+                if($('.person').is(':hidden')){
+                    $(".person").show();
+                    $('html, body').animate({
+                        scrollTop: $(".person").offset().top-70
+                    }, 500);
+                }
+
+                if($(this).parent().hasClass('chef')) {
+                    $('.chef_info').removeClass("d-none").addClass("d-flex");
+                } else {
+                    $('.chef_info').removeClass("d-flex").addClass("d-none");
+                }
+                var selectedDay = $('input[name="table"]:checked');
+                $('.persons').html('');
+                for (i = selectedDay.data('min'); i <=selectedDay.data('max'); i++) {
+
+
+                    $('.persons').append('<div>\n'+
+                        '<input type="radio" name="person" id="person_'+i+'" value="'+i+'"'+
+                        ' required/>\n'+
+                        '<label for="person_'+i+'">'+i+' person'+
+                        (i > 1 ? 's': '') +
+                        '</label>\n'+
+                        '</div>')
+                }
+                $("#result_table").html($("label[for='"+$(this).attr("id")+"']").text());
+            });
+
+
+            $("body").on('click', '.persons input', function(e){
+                if($('.contact').is(':hidden')){
+                    $(".contact").show();
+                    $('html, body').animate({
+                        scrollTop: $(".contact").offset().top-70
+                    }, 500);
+                }
+
+
+
+                $("#result_persons").html($("label[for='"+$(this).attr("id")+"']").text());
+            });
+
+
+            $('#reservation').on('click', function(e){
+
+                e.preventDefault();
+                var selectedDay = $('input[name="reservationDay"]:checked').val();
+                var selectedTime = $('input[name="time"]:checked').val();
+                var selectedTable = $('input[name="table"]:checked').val();
+                var selectedPerson = $('input[name="person"]:checked').val();
+                var contactName = $('#name').val();
+                var contactPhone = $('#phone').val();
+
+                $.ajax({
+                    url: "{{ path('do_reservation') }}",
+                    type: "POST",
+                    contentType: "application/json",
+                    beforeSend: function () {
+
+
+                    },
+                    data: JSON.stringify( { "time": selectedTime, "date":selectedDay, "table":selectedTable, "persons":selectedPerson, "name":contactName,"phone":contactPhone } ),
+                    success: function(result){
+                        console.log(result);
+                        if(result.code === 200) {
+                            $('#modal_body').html('<div><strong>You have following errors in Your form</strong></div>');
+                            $.each(result.errors, function(i, item) {
+                                $('#modal_body').append('<div>'+item+'</div>');
+                            });
+                            $('#exampleModal').modal('show');
+                        } else if (result.code === 100) {
+                            window.location.replace("{{ path('app_my_reservations') }}");
+                        }
+                    }
+                });
+            })
+
+        });
+    </script>
+{% endblock %}

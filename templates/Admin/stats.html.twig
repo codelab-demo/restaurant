@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div role="main" class="main">
+    <div class="container">
+        {%  include('Admin/adminMenu.html.twig') %}
+
+        <section class="page-header page-header-modern page-header-md bg-transparent mb-0 pb-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 align-self-center p-static order-2 text-center">
+                        <h1 class="text-10 text-color-dark my-3">Statistics</h1>
+                        <hr class="custom-divider my-0">
+                        <p class="text-3">Total reservations in this month: <strong> {{ reservations }}</strong></p>
+                        <hr class="custom-divider my-0">
+                        <p class="text-3">Total earnings in this month: <strong> ${{ earnings }}</strong></p>
+                        <hr class="custom-divider my-0">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+   </div>
+{% endblock %}

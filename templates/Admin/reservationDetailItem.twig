@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container">
+    {%  include('Admin/adminMenu.html.twig') %}
+    <section class="page-header page-header-modern page-header-md bg-transparent mb-0 pb-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 align-self-center p-static order-2 text-center">
+                    <h1 class="text-10 text-color-dark my-3">Position modify</h1>
+                    <p class="text-3">Reservation: <strong> {{ item.name.name }}</strong></p>
+                    <hr class="custom-divider my-0">
+                </div>
+            </div>
+        </div>
+    </section>
+<div class="d-flex justify-content-center mb-5">
+    <form class="edit-form" method="POST">
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="form-row">
+            <div class="form-group col">
+                <label class="font-weight-bold text-dark text-2" for="quantity">Quantity</label>
+                <input style="width:100px;" id="quantity" type="text" value="{{ item.quantity }}" data-msg-required="Please provide correct quantity." maxlength="10" class="form-control" name="quantity" required>
+            </div>
+        </div><div class="form-row">
+            <div class="form-group col">
+                <label class="font-weight-bold text-dark text-2" for="price">Price per item</label>
+                <input style="width:100px;" id="price" type="text" value="{{ (item.price/item.quantity)|number_format(2) }}" data-msg-required="Please provide correct price." maxlength="10" class="form-control" name="price" required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col">
+                <input type="hidden" name="token" value="{{ csrf_token( item.id ) }}">
+                <input type="submit" value="Save changes" class="btn btn-primary btn-modern" data-loading-text="Loading...">
+            </div>
+        </div>
+    </form>
+</div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{  parent() }}
+
+
+{% endblock %}
