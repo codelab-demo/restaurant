@@ -51,15 +51,6 @@ class MenuController extends AbstractController
 
         $specials = $menu->findSpecials();
 
-        $days = array(
-            1 => 'Monday',
-            2 => 'Tuesday',
-            3 => 'Wednesday',
-            4 => 'Thursday',
-            5 => 'Friday',
-            6 => 'Saturday',
-            7 => 'Sunday'
-        );
 
         return $this->render('\Portal\menu.html.twig', [
             'soups' => $soups,
@@ -69,8 +60,6 @@ class MenuController extends AbstractController
             'deserts' => $deserts,
             'drinks' => $drinks,
             'specials' => $specials,
-            'days' => $days
-
         ]);
     }
 }

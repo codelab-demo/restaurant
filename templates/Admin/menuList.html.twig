@@ -60,7 +60,7 @@
                     </td>
                     <td>
                         {% if item.special is not null %}
-                            {{ daysOfWeek[item.special] }}
+                            {{ item.special|dayofweek }}
                         {% endif %}
                     </td>
                     <td>

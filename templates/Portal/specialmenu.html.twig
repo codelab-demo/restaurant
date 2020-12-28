@@ -10,7 +10,7 @@
                 {% for pos in specials %}
                     <li>
                         <img src="img/menu/{{ pos.image }}" class="img-fluid" alt="">
-                        <h3>{{ days[pos.special] }} <em>Special</em></h3>
+                        <h3>{{ pos.special|dayofweek }} <em>Special</em></h3>
                         <p><span>{{ pos.name }}</span></p>
                         <strong class="special-menu-price text-color-dark">${{ pos.price }}</strong>
                     </li>

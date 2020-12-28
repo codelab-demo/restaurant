@@ -79,12 +79,7 @@ class CloseReservationsCommand extends Command
 
         $MenuList = $this->menuRepository->findAll();
 
-        $cat_li = 0;
-        $ape_li = 0;
-        $main_li = 0;
-        $fish_li = 0;
-        $des_li = 0;
-        $dri_li = 0;
+        $cat_li = $ape_li = $main_li = $fish_li = $des_li = $dri_li = 0;
         foreach($MenuList as $menu) {
             if($menu->getCategory() == "Soups") { $cat = 'soup'; $cat_li++;$menu_name = $cat.'_'.$cat_li;}
             if($menu->getCategory() == "Appetizers") { $cat = 'appetizer'; $ape_li++;$menu_name = $cat.'_'.$ape_li;}

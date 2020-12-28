@@ -57,7 +57,7 @@
                         <div class="btn-group-toggle" data-toggle="buttons">
                             {% for key, item in daysOfWeek %}
                             <label class="btn btn-outline btn-primary mb-2">
-                                <input type="radio" name="special" autocomplete="off" value="{{ key }}" {% if menu.special == key %} checked="checked" {% endif %}>{{ item }}</label>
+                                <input type="radio" name="special" autocomplete="off" value="{{ key }}" {% if menu.special == key %} checked="checked" {% endif %}>{{ key|dayofweek }}</label>
                             {% endfor %}
                         </div>
 
