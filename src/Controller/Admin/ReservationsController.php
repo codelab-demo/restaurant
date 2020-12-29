@@ -68,10 +68,18 @@ class ReservationsController extends AbstractController
 
         }
 
+        $reservationTimes = [
+            '16:00',
+            '18:00',
+            '20:00',
+            '22:00'
+        ];
+
 
         return $this->render('Admin/dailyReservation.html.twig', [
             'dailyReservations' => $reservationList,
             'dayDate'=>(is_null(($date)) ? date('d-m-Y'):$date),
+            'reservationTimes' => $reservationTimes
         ]);
     }
 

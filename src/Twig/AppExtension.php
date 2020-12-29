@@ -18,7 +18,8 @@ class AppExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('function_name', [$this, 'dayOfWeek']),
+            new TwigFunction('isAvailableToReserve', [$this, 'isAvailableToReserve']),
+            new TwigFunction('prepareReservationTime', [$this, 'prepareReservationTime']),
         ];
     }
 
@@ -34,5 +35,13 @@ class AppExtension extends AbstractExtension
             case 7: return 'Sunday';
         }
         return "Wrong name";
+    }
+
+    public function isAvailableToReserve($date, $time) {
+        return strtotime(date('d-m-Y'))  <  strtotime($date) ||  (strtotime(date('d-m-Y'))  ==  strtotime($date) && strtotime(date('H:i')) < strtotime($time));
+    }
+
+    public function prepareReservationTime($date, $time) {
+        return strtotime($date." ". $time);
     }
 }

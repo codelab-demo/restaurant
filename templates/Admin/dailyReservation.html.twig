@@ -36,18 +36,11 @@
             <th>
                 Table
             </th>
-            <th>
-                16:00
-            </th>
-            <th>
-                18:00
-            </th>
-            <th>
-                20:00
-            </th>
-            <th>
-                22:00
-            </th>
+            {% for times in reservationTimes %}
+                <th>
+                    {{ times }}
+                </th>
+            {% endfor %}
         </tr>
         </thead>
         <tbody>
@@ -56,43 +49,17 @@
             <td>
                 {{ day.name }}
             </td>
-            <td>
-                {% if(day['16:00'] is defined) %}
-                <a class="text-decoration-none" href="{{ path('app_admin_reservation_details', {hash: day['16:00']['hash']}) }}"><div class="{{ day['16:00']['status']|lower  }} pl-4 text-white">Persons: {{ day['16:00']['persons'] }}</div></a>
-                {% else %}
-                     {%  if (date()|date('Y-m-d')  <  date(dayDate)|date('Y-m-d')) or  (date()|date('Y-m-d')  ==  date(dayDate)|date('Y-m-d') and "now"|date('H:i', 'Europe/Paris') < date(dayDate)|date_modify("+16 hours")|date("H:i")) %}
-                         <a class="text-decoration-none" href="{{ path('app_admin_reservation_add', {'date':date(dayDate)|date('d-m-Y'), 'time': date(dayDate)|date_modify("+16 hours")|date("H:i"), 'table':  key}) }}"><div class="text-center"><i class="fas fa-2x fa-plus-square"></i></div></a>
-                     {% endif %}
-                {% endif %}
-            </td>
-            <td>
-                {% if(day['18:00'] is defined) %}
-                    <a class="text-decoration-none" href="{{ path('app_admin_reservation_details', {hash: day['18:00']['hash']}) }}"><div class="{{ day['18:00']['status']|lower  }} pl-4 text-white">Persons: {{ day['18:00']['persons'] }}</div></a>
-                {% else %}
-                    {%  if date()|date('Y-m-d')  <  date(dayDate)|date('Y-m-d') or  (date()|date('Y-m-d')  ==  date(dayDate)|date('Y-m-d') and "now"|date('H:i', 'Europe/Paris') < date(dayDate)|date_modify("+18 hours")|date("H:i")) %}
-                        <a class="text-decoration-none" href="{{ path('app_admin_reservation_add', {'date':date(dayDate)|date('d-m-Y'), 'time': date(dayDate)|date_modify("+18 hours")|date("H:i"), 'table':  key}) }}"><div class="text-center"><i class="fas fa-2x fa-plus-square"></i></div></a>
+            {% for times in reservationTimes %}
+                <td>
+                    {% if(day[times] is defined) %}
+                    <a class="text-decoration-none" href="{{ path('app_admin_reservation_details', {hash: day[times]['hash']}) }}"><div class="{{ day[times]['status']|lower  }} pl-4 text-white">Persons: {{ day[times]['persons'] }}</div></a>
+                    {% else %}
+                         {%  if isAvailableToReserve(dayDate, times) %}
+                             <a class="text-decoration-none" href="{{ path('app_admin_reservation_add', {'date':date(dayDate)|date('d-m-Y'), 'time': prepareReservationTime(dayDate,times)|date("H:i"), 'table':  key}) }}"><div class="text-center"><i class="fas fa-2x fa-plus-square"></i></div></a>
+                         {% endif %}
                     {% endif %}
-                {% endif %}
-            </td>
-            <td>
-                {% if(day['20:00'] is defined) %}
-                    <a class="text-decoration-none" href="{{ path('app_admin_reservation_details', {hash: day['20:00']['hash']}) }}"><div class="{{ day['20:00']['status']|lower  }} pl-4 text-white">Persons: {{ day['20:00']['persons'] }}</div></a>
-                {% else %}
-                     {%  if date()|date('Y-m-d')  <  date(dayDate)|date('Y-m-d') or  (date()|date('Y-m-d')  ==  date(dayDate)|date('Y-m-d') and "now"|date('H:i', 'Europe/Paris') < date(dayDate)|date_modify("+20 hours")|date("H:i")) %}
-                        <a class="text-decoration-none" href="{{ path('app_admin_reservation_add', {'date':date(dayDate)|date('d-m-Y'), 'time': date(dayDate)|date_modify("+20 hours")|date("H:i"), 'table':  key}) }}"><div class="text-center"><i class="fas fa-2x fa-plus-square"></i></div></a>
-                     {% endif %}
-                {% endif %}
-            </td>
-            <td>
-                {% if(day['22:00'] is defined) %}
-                    <a class="text-decoration-none" href="{{ path('app_admin_reservation_details', {hash: day['22:00']['hash']}) }}"><div class="{{ day['22:00']['status']|lower  }} pl-4 text-white">Persons: {{ day['22:00']['persons'] }}</div></a>
-                {% else %}
-
-                    {%  if date()|date('Y-m-d')  <  date(dayDate)|date('Y-m-d') or  (date()|date('Y-m-d')  ==  date(dayDate)|date('Y-m-d') and "now"|date('H:i', 'Europe/Paris') < date(dayDate)|date_modify("+22 hours")|date("H:i")) %}
-                         <a class="text-decoration-none" href="{{ path('app_admin_reservation_add', {'date':date(dayDate)|date('d-m-Y'), 'time': date(dayDate)|date_modify("+22 hours")|date("H:i"), 'table':  key}) }}"><div class="text-center"><i class="fas fa-2x fa-plus-square"></i></div></a>
-                    {% endif %}
-                {% endif %}
-            </td>
+                </td>
+            {% endfor %}
         </tr>
         {% endfor %}
         </tbody>
