@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Board;
 use App\Repository\BoardRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -21,10 +22,12 @@ class TablesController extends AbstractController
 {
 
     private $router;
+    private $logger;
 
-    public function __construct(RouterInterface $router)
+    public function __construct(RouterInterface $router, LoggerInterface $logger)
     {
         $this->router = $router;
+        $this->logger = $logger;
     }
 
     /**
@@ -81,6 +84,7 @@ class TablesController extends AbstractController
                     $em->flush();
 
                     $this->addFlash('success', 'Table has been updated.');
+                    $this->logger->info('Table '.$table->getId().' has been edited');
                 }
                 return new RedirectResponse($this->router->generate('app_admin_tables'));
             }

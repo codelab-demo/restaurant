@@ -18,9 +18,6 @@ class TableReservationController extends AbstractController
     public function index(EntityManagerInterface $em, CacheInterface $cache): Response
     {
 
-
-
-
         $repoArticles = $em->getRepository(Board::class);
         $totalTables = $repoArticles->totalTables();
 

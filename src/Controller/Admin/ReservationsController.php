@@ -8,7 +8,9 @@ use App\Entity\ReservationDetail;
 use App\Repository\BoardRepository;
 use App\Repository\ReservationRepository;
 use App\Repository\UserRepository;
+use App\Service\DateHelper;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -28,10 +30,14 @@ class ReservationsController extends AbstractController
 {
 
     private $router;
+    private $dateHelper;
+    private $reservationLogger;
 
-    public function __construct(RouterInterface $router)
+    public function __construct(RouterInterface $router, DateHelper $dateHelper, LoggerInterface $reservationLogger)
     {
         $this->router = $router;
+        $this->dateHelper = $dateHelper;
+        $this->reservationLogger = $reservationLogger;
     }
     /**
      * Show all reservations per one day
@@ -104,6 +110,7 @@ class ReservationsController extends AbstractController
         if($reservation) {
             $em->remove($reservation);
             $em->flush();
+            $this->reservationLogger->warning('Admin: Reservation on'.$this->dateHelper->tableForLogger($reservation).' has been removed');
             $this->addFlash('success','Reservation has been deleted.');
         }
 
@@ -121,6 +128,7 @@ class ReservationsController extends AbstractController
             $reservation->setStatus("Closed");
             $em->persist($reservation);
             $em->flush();
+            $this->reservationLogger->warning('Admin: Reservation on '.$this->dateHelper->tableForLogger($reservation).' has been closed');
             $this->addFlash('success', 'Reservation has been closed');
 
         } else {
@@ -132,19 +140,21 @@ class ReservationsController extends AbstractController
     /**
      * @Route("/admin/reservation/add/{date}/{time}/{table}", name="app_admin_reservation_add")
      */
-    public function addReservation($date, $time, $table, EntityManagerInterface $em, Request $request): Response
+    public function addReservation($date, $time, $table, EntityManagerInterface $em, Request $request, LoggerInterface $logger): Response
     {
-        $errors = [];
+        $errors = false;
         $persons = intVal($request->request->get('persons'));
         $name = filter_var($request->request->get('name'),FILTER_SANITIZE_STRING);
         $phone = filter_var($request->request->get('phone'),FILTER_SANITIZE_STRING);
         if(\DateTime::createFromFormat('d-m-Y', $date) === false) {
-            $errors[] = 'Wrong date, please select correct one.';
+            $errors= true;
+            $logger->error('Admin: Wrong date during add reservation, received: '.$date);
             $this->addFlash('error','Wrong date, please select correct one');
         }
 
         if(\DateTime::createFromFormat('H:i', $time) === false || !in_array($time,array('16:00','18:00', '20:00', '22:00'))) {
-            $errors[] = 'Wrong time, please select correct one.';
+            $errors = true;
+            $logger->error('Admin: Wrong time during add reservation, received: '.$time);
             $this->addFlash('error','Wrong time, please select correct one');
         }
 
@@ -163,8 +173,8 @@ class ReservationsController extends AbstractController
             $this->addFlash('error', 'Table is already reserved');
         }
 
-        if(!empty($errors)) {
-
+        if($errors) {
+            $logger->error('Reservation process aborted.');
             return new RedirectResponse($this->router->generate('app_admin_reservations'));
         }
 
@@ -174,7 +184,8 @@ class ReservationsController extends AbstractController
 
 
             if($tableInfo->getNumberOfPersons() < $persons || $tableInfo->getMinNumberOfPersons() > $persons) {
-                $errors[] = 'Table is already reserved at this time.';
+                $logger->error('Wrong number of persons, received persons: '.$persons.' out of range: '.$tableInfo->getMinNumberOfPersons().'-'.$tableInfo->getNumberOfPersons());
+                $errors= true;
                 $this->addFlash('error', 'Wrong number of persons');
             } else {
                 $reservation->setTableDetails($tableInfo);
@@ -182,13 +193,14 @@ class ReservationsController extends AbstractController
                 $reservation->setContactPhone($phone);
                 $reservation->setContactName($name);
                 $reservation->setDate(\DateTime::createFromFormat('d-m-Y', $date));
-                $reservation->setReservationDate(new \DateTime("now"));
+                $reservation->setReservationDate(\DateTime::createFromFormat('Y-m-d H:i', $date." ".$time));
                 $reservation->setTime(\DateTime::createFromFormat('H:i', $time));
                 $reservation->setNumberOfPersons($persons);
                 $reservation->setIp($request->getClientIp());
                 $reservation->setHash(hash('sha1', $date . $time . $tableInfo->getId()));
                 $em->persist($reservation);
                 $em->flush();
+                $this->reservationLogger->info('Admin: New reservation on '.$this->dateHelper->tableForLogger($reservation));
                 $this->addFlash('success', 'Reservation has been added');
                 return new RedirectResponse($this->router->generate('app_admin_reservations'));
             }

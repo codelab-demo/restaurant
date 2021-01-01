@@ -6,6 +6,7 @@ use App\Entity\Menu;
 use App\Repository\MenuRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Gedmo\Sluggable\Util\Urlizer;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -21,10 +22,12 @@ class MenuController extends AbstractController
 {
 
     private $router;
+    private $logger;
 
-    public function __construct(RouterInterface $router)
+    public function __construct(RouterInterface $router, LoggerInterface $logger)
     {
         $this->router = $router;
+        $this->logger = $logger;
     }
 
     /**
@@ -121,6 +124,7 @@ class MenuController extends AbstractController
 
                     $em->persist($menu);
                     $em->flush();
+                    $this->logger->info('Menu item '.$menu->getId().' has been edited');
                     $this->addFlash('success', 'Menu item has been edited and saved.');
                     return new RedirectResponse($this->router->generate('app_admin_menu'));
                 }

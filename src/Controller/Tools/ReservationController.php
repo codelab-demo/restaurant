@@ -6,6 +6,7 @@ use App\Entity\Board;
 use App\Entity\Reservation;
 use App\Repository\BoardRepository;
 use App\Repository\ReservationRepository;
+use App\Service\DateHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,16 +24,20 @@ class ReservationController extends AbstractController
 {
 
     private $session;
+    private $reservationLogger;
+    private $dateHelper;
 
-    public function __construct(SessionInterface $session)
+    public function __construct(SessionInterface $session, LoggerInterface $reservationLogger, DateHelper $dateHelper)
     {
         $this->session = $session;
+        $this->reservationLogger = $reservationLogger;
+        $this->dateHelper = $dateHelper;
     }
 
     /**
      * @Route("/do_reservation", name="do_reservation", methods={"POST"})
      */
-    public function times(Request $request, EntityManagerInterface $em,BoardRepository $board, ReservationRepository $reservationRepo, LoggerInterface $logger): Response
+    public function doReservation(Request $request, EntityManagerInterface $em,BoardRepository $board, ReservationRepository $reservationRepo, LoggerInterface $logger): Response
     {
 
         $response = [];
@@ -46,11 +51,15 @@ class ReservationController extends AbstractController
 
         $errors = [];
 
-        if(\DateTime::createFromFormat('Y-m-d', $requestDate) === false)
+        if(\DateTime::createFromFormat('Y-m-d', $requestDate) === false) {
             $errors[] = 'Wrong date, please select correct one.';
+            $logger->error('Portal: Wrong date, received: '.$requestDate);
+        }
 
-        if($time = \DateTime::createFromFormat('H:i', $requestTime) === false || !in_array($requestTime,array('16:00','18:00', '20:00', '22:00')))
+        if($time = \DateTime::createFromFormat('H:i', $requestTime) === false || !in_array($requestTime,array('16:00','18:00', '20:00', '22:00'))) {
             $errors[] = 'Wrong time, please select correct one.';
+            $logger->error('Portal: Wrong time, received: '.$requestTime);
+        }
 
 
         $table = $board->find($requestTable);
@@ -62,6 +71,7 @@ class ReservationController extends AbstractController
 
         if($diff < 0 || $diff > 11) {
             $errors[] = 'Wrong date';
+            $logger->error('Portal: Wrong date, received: '.$requestDate.'; diff: '.$diff);
         }
 
         if(!$table) {
@@ -69,11 +79,14 @@ class ReservationController extends AbstractController
         } else {
             if($table->getMinNumberOfPersons() > $requestPersons ||$table->getNumberOfPersons() < $requestPersons) {
                 $errors[] = 'Wrong number of persons';
+                $logger->error('Portal: Wrong number of persons, received persons: '.$requestPersons.'out of range: '.$table->getMinNumberOfPersons().'-'.$table->getNumberOfPersons());
             }
         }
 
-        if(!$requestName || !$requestPhone)
+        if(!$requestName || !$requestPhone) {
             $errors[] = 'Wrong contact data, please provide correct Name and phone';
+            $logger->error('Portal: Wrong contact data, received name: '.$requestName.'; received phone: '.$requestPhone);
+        }
 
         $reservation = $reservationRepo->findBy([
             'time' => \DateTime::createFromFormat('H:i', $requestTime),
@@ -81,6 +94,7 @@ class ReservationController extends AbstractController
             'tableDetails' => $table
         ]);
         if($reservation) {
+            $logger->error('Portal: reservation try on reserverd table');
             $errors[] = 'Table just reserved. Please choose other options.';
         }
 
@@ -95,18 +109,18 @@ class ReservationController extends AbstractController
             $reservation->setContactName($requestName);
             $reservation->setContactPhone($requestPhone);
             $reservation->setIp($request->getClientIp());
-            $reservation->setReservationDate(new \DateTime("now"));
+            $reservation->setReservationDate(\DateTime::createFromFormat('Y-m-d H:i', $requestDate." ".$requestTime));
 
             try {
                 $em->persist($reservation);
                 $em->flush();
                 $this->session->set('new_reservation', \DateTime::createFromFormat('Y-m-d', $requestDate)->format('jS F').' at '.$requestTime.' on '.$table->getName());
+                $this->reservationLogger->info('Portal: New reservation on '.$this->dateHelper->tableForLogger($reservation));
                 $response['code'] = 100;
                 $response['hash'] = $reservation->getHash();
             } catch (\Exception $e) {
                 $response['code'] = 200;
                 $response['errors'] = array('Error during saving reservation. Please contact us.');
-                $logger->error('Error during saving reservation:'. $e);
             }
         } else {
             $response['code'] = 200;

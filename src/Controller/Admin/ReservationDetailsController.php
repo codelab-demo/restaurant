@@ -7,6 +7,8 @@ use App\Entity\Reservation;
 use App\Entity\ReservationDetail;
 use App\Repository\MenuRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -15,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
+use App\Service\DateHelper;
 
 /**
  * @Security("is_granted('ROLE_ADMIN')")
@@ -23,10 +26,14 @@ class ReservationDetailsController extends AbstractController
 {
 
     private $router;
+    private $dateHelper;
+    private $reservationLogger;
 
-    public function __construct(RouterInterface $router)
+    public function __construct(RouterInterface $router, DateHelper $dateHelper, LoggerInterface $reservationLogger)
     {
         $this->router = $router;
+        $this->dateHelper = $dateHelper;
+        $this->reservationLogger = $reservationLogger;
     }
     /**
      * Delete a Reservation Detail
@@ -40,6 +47,7 @@ class ReservationDetailsController extends AbstractController
             $hash = $reservationDetail->getReservationId()->getHash();
             $em->remove($reservationDetail);
             $em->flush();
+            $this->reservationLogger->info('Position '.$reservationDetail->getName()->getName().' on '.$this->dateHelper->tableForLogger($reservationDetail->getReservationId()).' has been deleted');
             $this->addFlash('success','Reservation details has been deleted.');
         } else {
             return new RedirectResponse($this->router->generate('app_admin_reservations'));
@@ -86,6 +94,7 @@ class ReservationDetailsController extends AbstractController
                    $reservationDetail->setPrice($quantity*$price);
                    $reservationDetail->setQuantity($quantity);
                    $em->persist($reservationDetail);
+                    $this->reservationLogger->info('Position '.$reservationDetail->getName()->getName().' from reservation on'.$this->dateHelper->tableForLogger($reservationDetail->getReservationId()).' has been edited');
                    $em->flush();
                     $this->addFlash('success', 'Position '.$reservationDetail->getName()->getName().' has been modified.');
                    return new RedirectResponse($this->router->generate('app_admin_reservation_details', array('hash' => $hash)));
@@ -151,6 +160,7 @@ class ReservationDetailsController extends AbstractController
                     $reservationDetail->setTaxValue($quantity*$price*0.15);
                     $em->persist($reservationDetail);
                     $em->flush();
+                    $this->reservationLogger->info('Position '.$reservationDetail->getName()->getName().' x'.$reservationDetail->getQuantity().', value: $'.$reservationDetail->getPrice().' has been added to reservation details on '.$this->dateHelper->tableForLogger($reservationDetail->getReservationId()));
                     $this->addFlash('success', 'Position '.$menuItem->getName().' has been added.');
                     return new RedirectResponse($this->router->generate('app_admin_reservation_details', array('hash' => $hash)));
                 }
