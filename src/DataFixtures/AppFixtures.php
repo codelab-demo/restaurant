@@ -17,13 +17,13 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class AppFixtures extends Fixture
 {
 
-     private $passwordEncoder;
+    private $passwordEncoder;
 
 
-     public function __construct(UserPasswordEncoderInterface $passwordEncoder)
-     {
-         $this->passwordEncoder = $passwordEncoder;
-       }
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder)
+    {
+        $this->passwordEncoder = $passwordEncoder;
+    }
 
     public function load(ObjectManager $manager)
     {
@@ -42,8 +42,8 @@ class AppFixtures extends Fixture
         $user->setRoles(['ROLE_ADMIN']);
         $user->setUsername('admin');
         $user->setPassword($this->passwordEncoder->encodePassword(
-             $user,
-             'admin'
+            $user,
+            'admin'
         ));
         $manager->persist(($user));
         $manager->flush();
@@ -54,392 +54,161 @@ class AppFixtures extends Fixture
     {
 
         for ($i = 1; $i <= 12; $i++) {
-            $table = new Board();
 
-            $table->setNumberOfPersons(4);
-            $table->setTooltip("A standard table for up to 4 people to enjoying dining gourmet food");
-            $table->setName('#'.$i.' - Standard table');
-            if(in_array($i,array(1,2))) {
-                $table->setIsChef(true);
-                $table->setName('#'.$i.' - Chef table');
-                $table->setTooltip("Private chef’s table allow you and your guests to enjoy the theatre of the kitchen and meet the chef");
+            if (in_array($i, array(3, 4))) {
+                $table = $this->createTable(
+                    4,
+                    'Chef table',
+                    $i,
+                    false,
+                    true,
+                    6,
+                    'Private chef’s table allow you and your guests to enjoy the theatre of the kitchen and meet the chef');
+
+            } else if (in_array($i, array(3, 4))) {
+                $table = $this->createTable(
+                    6,
+                    'Family table',
+                    $i,
+                    true,
+                    false,
+                    6,
+                    'Family table offer spacious table for up to 6 guests in the side of the restaurant to make a private atmosphere');
+            } else {
+                $table = $this->createTable(
+                    4,
+                    'Standard table',
+                    $i,
+                    false,
+                    false,
+                    6,
+                    'A standard table for up to 4 people to enjoying dining gourmet food');
             }
 
-
-            if(in_array($i,array(3,4))) {
-                $table->setMinNumberOfPersons(3);
-                $table->setName('#'.$i.' - Family table');
-                $table->setIsFamily(true);
-                $table->setNumberOfPersons(6);
-                $table->setTooltip("Family table offer spacious table for up to 6 guests in the side of the restaurant to make a private atmosphere");
-
-            }
-
-            $this->addReference('table_'.$i, $table);
+            $this->addReference('table_' . $i, $table);
             $manager->persist($table);
         }
 
         $manager->flush();
     }
 
-    public function loadMenu(ObjectManager $manager) {
+    /**
+     * @param Board $table
+     * @param int $i
+     */
+    public function createTable(int $minNumberOfPersons, $title, int $i, bool $isFamily, bool $isChef, int $maxNumberOfPersons, $tooltip): Board
+    {
+        $table = new Board();
+
+        $table->setMinNumberOfPersons($minNumberOfPersons);
+        $table->setName('#' . $i . ' - ' . $title);
+        $table->setIsFamily($isFamily);
+        $table->setIsChef($isChef);
+        $table->setNumberOfPersons($maxNumberOfPersons);
+        $table->setTooltip($tooltip);
+
+        return $table;
+    }
+
+    public function loadMenu(ObjectManager $manager)
+    {
         $faker = \Faker\Factory::create();
 
-        $i=1;
+        $this->createSoups($faker, $manager, [1 => 1]);
 
-        $menu = new Menu();
-        $menu->setName("Tomato soup");
-        $menu->setCategory("Soups");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setSpecial("1");
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('soup_'.$i++, $menu);
-        $manager->persist($menu);
+        $this->createAppetizers($faker, $manager, [2 => 2]);
 
-        $menu = new Menu();
-        $menu->setName("Chiken soup");
-        $menu->setCategory("Soups");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('soup_'.$i++, $menu);
-        $manager->persist($menu);
+        $this->createMainDish($faker, $manager, [1 => 3, 2 => 7, 5 => 4]);
 
-        $menu = new Menu();
-        $menu->setName("Corn soup");
-        $menu->setCategory("Soups");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('soup_'.$i++, $menu);
-        $manager->persist($menu);
+        $this->createFishVege($faker, $manager, [1 => 5, 3 => 6]);
 
-        $menu = new Menu();
-        $menu->setName("Fish soup");
-        $menu->setCategory("Soups");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('soup_'.$i++, $menu);
-        $manager->persist($menu);
+        $this->createDeserts($faker, $manager, []);
 
-        $menu = new Menu();
-        $menu->setName("Onion soup");
-        $menu->setCategory("Soups");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('soup_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Pumpkin soup");
-        $menu->setCategory("Soups");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('soup_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $i=1;
-
-        $menu = new Menu();
-        $menu->setName("Shrimp tempura");
-        $menu->setCategory("Appetizers");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('appetizer_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Fried cheese");
-        $menu->setCategory("Appetizers");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('appetizer_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Beef tartar");
-        $menu->setCategory("Appetizers");
-        $menu->setSpecial("2");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('appetizer_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Beef carpaccio");
-        $menu->setCategory("Appetizers");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('appetizer_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Onion rings");
-        $menu->setCategory("Appetizers");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('appetizer_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Crispy prawns");
-        $menu->setCategory("Appetizers");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('appetizer_'.$i++, $menu);
-        $manager->persist($menu);
-
-
-        /**
-        * Mains
-        */
-        $i=1;
-        $menu = new Menu();
-        $menu->setName("Chicken breast");
-        $menu->setCategory("Main dish");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('main_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("New York steak");
-        $menu->setCategory("Main dish");
-        $menu->setSpecial("3");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('main_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("BBQ Burger");
-        $menu->setCategory("Main dish");
-        $menu->setSpecial("7");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('main_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Spaghetti");
-        $menu->setCategory("Main dish");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('main_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Lasagne");
-        $menu->setCategory("Main dish");
-        $menu->setSpecial("4");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('main_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Beef Sirloin");
-        $menu->setCategory("Main dish");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('main_'.$i++, $menu);
-        $manager->persist($menu);
-
-        /**
-        * Fish & vege
-        */
-        $i=1;
-        $menu = new Menu();
-        $menu->setName("Roast Salmon");
-        $menu->setCategory("Fish and vege");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('fishvege_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Grilled trout");
-        $menu->setCategory("Fish and vege");
-        $menu->setSpecial("5");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('fishvege_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Smoked Salmon");
-        $menu->setCategory("Fish and vege");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('fishvege_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Mushroom Risotto");
-        $menu->setCategory("Fish and vege");
-        $menu->setSpecial("6");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('fishvege_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Caesar Salad");
-        $menu->setCategory("Fish and vege");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('fishvege_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Trotilla Espanola");
-        $menu->setCategory("Fish and vege");
-        $menu->setPrice($faker->numberBetween(10,25));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('fishvege_'.$i++, $menu);
-        $manager->persist($menu);
-
-        /**
-        * Deserts
-        */
-        $i=1;
-        $menu = new Menu();
-        $menu->setName("Apple Pie");
-        $menu->setCategory("Deserts");
-        $menu->setPrice($faker->numberBetween(10,15));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('desert_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Brownie");
-        $menu->setCategory("Deserts");
-        $menu->setPrice($faker->numberBetween(10,15));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('desert_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Black Forest Cake");
-        $menu->setCategory("Deserts");
-        $menu->setPrice($faker->numberBetween(10,15));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('desert_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Flan Caramel");
-        $menu->setCategory("Deserts");
-        $menu->setPrice($faker->numberBetween(10,15));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('desert_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Tiramisu");
-        $menu->setCategory("Deserts");
-        $menu->setPrice($faker->numberBetween(10,15));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('desert_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Banana Split");
-        $menu->setCategory("Deserts");
-        $menu->setPrice($faker->numberBetween(10,15));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('desert_'.$i++, $menu);
-        $manager->persist($menu);
-
-
-        /**
-         * Drinks & Beverages
-         */
-        $i=1;
-        $menu = new Menu();
-        $menu->setName("Bottle of red wine");
-        $menu->setCategory("Drinks");
-        $menu->setPrice($faker->numberBetween(15,20));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('drink_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Bottle of white wine");
-        $menu->setCategory("Drinks");
-        $menu->setPrice($faker->numberBetween(10,15));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('drink_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Bottle of Prosseco");
-        $menu->setCategory("Drinks");
-        $menu->setPrice($faker->numberBetween(10,15));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('drink_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Sparkling Water");
-        $menu->setCategory("Drinks");
-        $menu->setPrice($faker->numberBetween(5,10));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('drink_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Black Tea");
-        $menu->setCategory("Drinks");
-        $menu->setPrice($faker->numberBetween(5,10));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('drink_'.$i++, $menu);
-        $manager->persist($menu);
-
-        $menu = new Menu();
-        $menu->setName("Coffe with milk");
-        $menu->setCategory("Drinks");
-        $menu->setPrice($faker->numberBetween(5,10));
-        $menu->setImage(Urlizer::urlize($menu->getName()).".jpg");
-        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
-        $this->addReference('drink_'.$i++, $menu);
-        $manager->persist($menu);
-
+        $this->createDrinks($faker, $manager, []);
 
         $manager->flush();
+    }
+
+    private function createSoups($faker, $manager, array $special)
+    {
+        $category = 'Soups';
+        $key = 'soup';
+        $dishes = ['Tomato soup', 'Chiken soup', 'Corn soup', 'Fish soup', 'Onion soup', 'Pumpkin soup'];
+        for ($i = 0; $i <= 5; $i++) {
+            $this->createMenuItem($faker, $manager, $category, $dishes[$i], $key, $special, $i);
+        }
+    }
+
+    /**
+     * @param $faker
+     * @return array
+     */
+    public function createMenuItem($faker, $manager, $category, $name, $key, $special, $i): array
+    {
+        $menu = new Menu();
+        foreach ($special as $item) {
+            if ($i === $item[0]) {
+                $menu->setSpecial($item[1]);
+            }
+        }
+
+        $menu->setName($name);
+        $menu->setCategory($category);
+        $menu->setPrice($faker->numberBetween(10, 25));
+        $menu->setImage(Urlizer::urlize($menu->getName()) . '.jpg');
+        $menu->setDescription($faker->sentence($nbWords = 10, $variableNbWords = true));
+        $this->addReference($key . '_' . $i, $menu);
+        $manager->persist($menu);
+    }
+
+    private function createAppetizers($faker, ObjectManager $manager, array $special)
+    {
+        $category = 'Appetizers';
+        $key = 'appetizer';
+        $dishes = ['Shrimp tempura', 'Fried cheese', 'Beef tartar', 'Beef carpaccio', 'Onion rings', 'Crispy prawns'];
+        for ($i = 0; $i <= 5; $i++) {
+            $this->createMenuItem($faker, $manager, $category, $dishes[$i], $key, $special, $i);
+        }
+    }
+
+    private function createMainDish($faker, ObjectManager $manager, array $special)
+    {
+        $category = 'Main dish';
+        $key = 'main';
+        $dishes = ['Chicken breast', 'New York steak', 'BBQ Burger', 'Spaghetti', 'Lasagne', 'Beef Sirloin'];
+        for ($i = 0; $i <= 5; $i++) {
+            $this->createMenuItem($faker, $manager, $category, $dishes[$i], $key, $special, $i);
+        }
+    }
+
+    private function createFishVege($faker, ObjectManager $manager, array $special)
+    {
+        $category = 'Fish and vege';
+        $key = 'fishvege';
+        $dishes = ['Roast Salmon', 'Grilled trout', 'Smoked Salmon', 'Mushroom Risotto', 'Caesar Salad', 'Trotilla Espanola'];
+        for ($i = 0; $i <= 5; $i++) {
+            $this->createMenuItem($faker, $manager, $category, $dishes[$i], $key, $special, $i);
+        }
+    }
+
+    private function createDeserts($faker, ObjectManager $manager, array $special)
+    {
+        $category = 'Deserts';
+        $key = 'desert';
+        $dishes = ['Apple Pie', 'Brownie', 'Black Forest Cake', 'Flan Caramel', 'Tiramisu', 'Banana Split'];
+        for ($i = 0; $i <= 5; $i++) {
+            $this->createMenuItem($faker, $manager, $category, $dishes[$i], $key, $special, $i);
+        }
+    }
+
+    private function createDrinks($faker, ObjectManager $manager, array $special)
+    {
+        $category = 'Drinks';
+        $key = 'drink';
+        $dishes = ['Bottle of red wine', 'Bottle of white wine', 'Bottle of Prosseco', 'Sparkling Water', 'Black Tea', 'Coffe with milk'];
+        for ($i = 0; $i <= 5; $i++) {
+            $this->createMenuItem($faker, $manager, $category, $dishes[$i], $key, $special, $i);
+        }
     }
 
     public function loadReservation($manager)
@@ -466,10 +235,10 @@ class AppFixtures extends Fixture
             for ($j = 1; $j <= 4; $j++) {
                 for ($m = 1; $m <= 12; $m++) {
                     if ($faker->boolean(60)) {
-                        $time = new \DateTime(date('d-m-Y H:i',strtotime(date ("Y-m-d"). "  $hours[$j]")));
-                        $time->modify('+ '.$i.' days');
+                        $time = new \DateTime(date('d-m-Y H:i', strtotime(date("Y-m-d") . "  $hours[$j]")));
+                        $time->modify('+ ' . $i . ' days');
                         $reservation = new Reservation();
-                        $reservation->setDate(\DateTime::createFromFormat('Y-m-d', date('Y-m-d', strtotime(('+ '.$i.' days')))));
+                        $reservation->setDate(\DateTime::createFromFormat('Y-m-d', date('Y-m-d', strtotime(('+ ' . $i . ' days')))));
                         $reservation->setTime(\DateTime::createFromFormat('H:i', $hours[$j]));
                         $reservation->setReservationDate($time);
                         $reservation->setTableDetails($this->getReference('table_' . $m));
@@ -495,13 +264,12 @@ class AppFixtures extends Fixture
             for ($j = 1; $j <= 4; $j++) {
                 for ($m = 1; $m <= 12; $m++) {
                     if ($faker->boolean(60)) {
-                        $time = new \DateTime(date('d-m-Y H:i',strtotime(date ("Y-m")."-".$i." ".$hours[$j])));
-//                        $time->modify('+ '.$i.' days');
+                        $time = new \DateTime(date('d-m-Y H:i', strtotime(date("Y-m") . "-" . $i . " " . $hours[$j])));
                         $reservation = new Reservation();
                         $reservation->setDate(\DateTime::createFromFormat('Y-m-d', date('Y-m') . '-' . $i));
                         $reservation->setTime(\DateTime::createFromFormat('H:i', $hours[$j]));
                         $reservation->setReservationDate($time);
-                        $reservation->setTableDetails($this->getReference('table_'.$m));
+                        $reservation->setTableDetails($this->getReference('table_' . $m));
                         if ($reservation->getTableDetails()->getIsFamily()) {
                             $reservation->setNumberOfPersons($faker->numberBetween(3, 6));
                         } else {
@@ -520,7 +288,7 @@ class AppFixtures extends Fixture
                             if ($faker->boolean(60)) {
                                 $name = "soup_" . $faker->numberBetween(1, 6);
 
-                                if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                                if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                                     $reservationDetails = $this->increaseQuantity($reservation, $name);
                                 } else {
                                     $reservationDetails = $this->newReservationDetails($reservation, $name);
@@ -530,7 +298,7 @@ class AppFixtures extends Fixture
                             //apetizer
                             if ($faker->boolean(90)) {
                                 $name = "appetizer_" . $faker->numberBetween(1, 6);
-                                if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                                if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                                     $reservationDetails = $this->increaseQuantity($reservation, $name);
                                 } else {
                                     $reservationDetails = $this->newReservationDetails($reservation, $name);
@@ -539,7 +307,7 @@ class AppFixtures extends Fixture
                             }
                             if ($faker->boolean(60)) {
                                 $name = "main_" . $faker->numberBetween(1, 6);
-                                if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                                if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                                     $reservationDetails = $this->increaseQuantity($reservation, $name);
                                 } else {
                                     $reservationDetails = $this->newReservationDetails($reservation, $name);
@@ -548,7 +316,7 @@ class AppFixtures extends Fixture
                                 $manager->persist($reservationDetails);
                             } else {
                                 $name = "fishvege_" . $faker->numberBetween(1, 6);
-                                if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                                if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                                     $reservationDetails = $this->increaseQuantity($reservation, $name);
                                 } else {
                                     $reservationDetails = $this->newReservationDetails($reservation, $name);
@@ -557,7 +325,7 @@ class AppFixtures extends Fixture
                             }
                             if ($faker->boolean(60)) {
                                 $name = "desert_" . $faker->numberBetween(1, 6);
-                                if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                                if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                                     $reservationDetails = $this->increaseQuantity($reservation, $name);
                                 } else {
                                     $reservationDetails = $this->newReservationDetails($reservation, $name);
@@ -566,7 +334,7 @@ class AppFixtures extends Fixture
                             }
                             if ($faker->boolean(50)) {
                                 $name = "drink_" . $faker->numberBetween(1, 6);
-                                if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                                if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                                     $reservationDetails = $this->increaseQuantity($reservation, $name);
                                 } else {
                                     $reservationDetails = $this->newReservationDetails($reservation, $name);
@@ -580,22 +348,22 @@ class AppFixtures extends Fixture
 
                 }
             }
-
-
         }
         $manager->flush();
     }
 
-    protected function increaseQuantity($reservation, $name) {
-        $referenceName = 'reservation_details_'.$reservation->getHash().'_'.$name;
+    protected function increaseQuantity($reservation, $name)
+    {
+        $referenceName = 'reservation_details_' . $reservation->getHash() . '_' . $name;
         $reservationDetails = $this->getReference($referenceName);
-        $reservationDetails->setQuantity($reservationDetails->getQuantity()+1);
-        $reservationDetails->setPrice($reservationDetails->getPrice()+$reservationDetails->getName()->getPrice());
+        $reservationDetails->setQuantity($reservationDetails->getQuantity() + 1);
+        $reservationDetails->setPrice($reservationDetails->getPrice() + $reservationDetails->getName()->getPrice());
         return $reservationDetails;
 
     }
 
-    protected function newReservationDetails($reservation, $name) {
+    protected function newReservationDetails($reservation, $name)
+    {
         $reservationDetails = new ReservationDetail();
         $reservationDetails->setReservationId($reservation);
         $reservationDetails->setName($this->getReference($name));
@@ -603,7 +371,7 @@ class AppFixtures extends Fixture
         $reservationDetails->setReservationId($reservation);
         $reservationDetails->setPrice($reservationDetails->getName()->getPrice());
         $reservationDetails->setTaxValue($reservationDetails->getName()->getPrice() * 0.15);
-        $referenceName = 'reservation_details_'.$reservation->getHash().'_'.$name;
+        $referenceName = 'reservation_details_' . $reservation->getHash() . '_' . $name;
         $this->addReference($referenceName, $reservationDetails);
         return $reservationDetails;
 

@@ -17,12 +17,6 @@ class CloseReservationsCommand extends Command
 {
     // the name of the command (the part after "bin/console")
     protected static $defaultName = 'app:close';
-
-    protected function configure()
-    {
-        // ...
-    }
-
     private $entityManager;
     private $reservationRepository;
     private $menuRepository;
@@ -39,37 +33,8 @@ class CloseReservationsCommand extends Command
         parent::__construct();
     }
 
-    protected function hasReference(string $reference) {
-        return array_key_exists($reference,$this->references);
-    }
-    
-    protected function getReference(string $reference)  {
-        return $this->references[$reference];
-    }
-    
-    protected function addReference(string $reference, $obj) {
-        $this->references[$reference] = $obj;
-    }
-
-    protected function increaseQuantity($reservation, $name) {
-        $referenceName = 'reservation_details_'.$reservation->getHash().'_'.$name;
-        $reservationDetails = $this->getReference($referenceName);
-        $reservationDetails->setQuantity($reservationDetails->getQuantity()+1);
-        $reservationDetails->setPrice($reservationDetails->getPrice()+$reservationDetails->getName()->getPrice());
-        $this->entityManager->persist($reservationDetails);
-    }
-
-    protected function newReservationDetails($reservation, $name) {
-        $reservationDetails = new ReservationDetail();
-        $reservationDetails->setReservationId($reservation);
-        $reservationDetails->setName($this->getReference($name));
-        $reservationDetails->setQuantity(1);
-        $reservationDetails->setReservationId($reservation);
-        $reservationDetails->setPrice($reservationDetails->getName()->getPrice());
-        $reservationDetails->setTaxValue($reservationDetails->getName()->getPrice() * 0.15);
-        $referenceName = 'reservation_details_'.$reservation->getHash().'_'.$name;
-        $this->addReference($referenceName, $reservationDetails);
-        $this->entityManager->persist($reservationDetails);
+    protected function configure()
+    {
 
     }
 
@@ -79,15 +44,39 @@ class CloseReservationsCommand extends Command
 
         $MenuList = $this->menuRepository->findAll();
 
-        $cat_li = $ape_li = $main_li = $fish_li = $des_li = $dri_li = 0;
-        foreach($MenuList as $menu) {
-            if($menu->getCategory() == "Soups") { $cat = 'soup'; $cat_li++;$menu_name = $cat.'_'.$cat_li;}
-            if($menu->getCategory() == "Appetizers") { $cat = 'appetizer'; $ape_li++;$menu_name = $cat.'_'.$ape_li;}
-            if($menu->getCategory() == "Main dish") {$cat = 'main';$main_li++;$menu_name = $cat.'_'.$main_li;}
-            if($menu->getCategory() == "Fish and vege") {$cat = 'fishvege'; $fish_li++; $menu_name = $cat.'_'.$fish_li;}
-            if($menu->getCategory() == "Deserts") {$cat = 'desert'; $des_li++;$menu_name = $cat.'_'.$des_li;}
-            if($menu->getCategory() == "Drinks") {$cat = 'drink'; $dri_li++;$menu_name = $cat.'_'.$dri_li;}
-            $this->addReference($menu_name, $menu);
+        $soupCounter = $appetizersCounter = $mainDishCounter = $fishCounter = $desertsCounter = $drinkCounter = 0;
+        foreach ($MenuList as $menu) {
+            if ($menu->getCategory() === "Soups") {
+                $category = 'soup';
+                $soupCounter++;
+                $menuName = $category . '_' . $soupCounter;
+            }
+            if ($menu->getCategory() === "Appetizers") {
+                $category = 'appetizer';
+                $appetizersCounter++;
+                $menuName = $category . '_' . $appetizersCounter;
+            }
+            if ($menu->getCategory() === "Main dish") {
+                $category = 'main';
+                $mainDishCounter++;
+                $menuName = $category . '_' . $mainDishCounter;
+            }
+            if ($menu->getCategory() === "Fish and vege") {
+                $category = 'fishvege';
+                $fishCounter++;
+                $menuName = $category . '_' . $fishCounter;
+            }
+            if ($menu->getCategory() === "Deserts") {
+                $category = 'desert';
+                $desertsCounter++;
+                $menuName = $category . '_' . $desertsCounter;
+            }
+            if ($menu->getCategory() === "Drinks") {
+                $category = 'drink';
+                $drinkCounter++;
+                $menuName = $category . '_' . $drinkCounter;
+            }
+            $this->addReference($menuName, $menu);
         }
 
 
@@ -97,7 +86,7 @@ class CloseReservationsCommand extends Command
                 if ($this->faker->boolean(60)) {
                     $name = "soup_" . $this->faker->numberBetween(1, 6);
 
-                    if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                    if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                         $this->increaseQuantity($reservation, $name);
                     } else {
                         $this->newReservationDetails($reservation, $name);
@@ -107,7 +96,7 @@ class CloseReservationsCommand extends Command
                 //apetizer
                 if ($this->faker->boolean(90)) {
                     $name = "appetizer_" . $this->faker->numberBetween(1, 6);
-                    if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                    if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                         $this->increaseQuantity($reservation, $name);
                     } else {
                         $this->newReservationDetails($reservation, $name);
@@ -115,14 +104,14 @@ class CloseReservationsCommand extends Command
                 }
                 if ($this->faker->boolean(60)) {
                     $name = "main_" . $this->faker->numberBetween(1, 6);
-                    if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                    if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                         $this->increaseQuantity($reservation, $name);
                     } else {
                         $this->newReservationDetails($reservation, $name);
                     }
                 } else {
                     $name = "fishvege_" . $this->faker->numberBetween(1, 6);
-                    if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                    if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                         $this->increaseQuantity($reservation, $name);
                     } else {
                         $this->newReservationDetails($reservation, $name);
@@ -130,7 +119,7 @@ class CloseReservationsCommand extends Command
                 }
                 if ($this->faker->boolean(60)) {
                     $name = "desert_" . $this->faker->numberBetween(1, 6);
-                    if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                    if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                         $this->increaseQuantity($reservation, $name);
                     } else {
                         $this->newReservationDetails($reservation, $name);
@@ -138,7 +127,7 @@ class CloseReservationsCommand extends Command
                 }
                 if ($this->faker->boolean(50)) {
                     $name = "drink_" . $this->faker->numberBetween(1, 6);
-                    if ($this->hasReference('reservation_details_'.$reservation->getHash().'_'.$name)) {
+                    if ($this->hasReference('reservation_details_' . $reservation->getHash() . '_' . $name)) {
                         $this->increaseQuantity($reservation, $name);
                     } else {
                         $this->newReservationDetails($reservation, $name);
@@ -150,6 +139,45 @@ class CloseReservationsCommand extends Command
         }
         $this->entityManager->flush();
         return Command::SUCCESS;
+
+    }
+
+    protected function addReference(string $reference, $obj)
+    {
+        $this->references[$reference] = $obj;
+    }
+
+    protected function hasReference(string $reference)
+    {
+        return array_key_exists($reference, $this->references);
+    }
+
+    protected function increaseQuantity($reservation, $name)
+    {
+        $referenceName = 'reservation_details_' . $reservation->getHash() . '_' . $name;
+        $reservationDetails = $this->getReference($referenceName);
+        $reservationDetails->setQuantity($reservationDetails->getQuantity() + 1);
+        $reservationDetails->setPrice($reservationDetails->getPrice() + $reservationDetails->getName()->getPrice());
+        $this->entityManager->persist($reservationDetails);
+    }
+
+    protected function getReference(string $reference)
+    {
+        return $this->references[$reference];
+    }
+
+    protected function newReservationDetails($reservation, $name)
+    {
+        $reservationDetails = new ReservationDetail();
+        $reservationDetails->setReservationId($reservation);
+        $reservationDetails->setName($this->getReference($name));
+        $reservationDetails->setQuantity(1);
+        $reservationDetails->setReservationId($reservation);
+        $reservationDetails->setPrice($reservationDetails->getName()->getPrice());
+        $reservationDetails->setTaxValue($reservationDetails->getName()->getPrice() * 0.15);
+        $referenceName = 'reservation_details_' . $reservation->getHash() . '_' . $name;
+        $this->addReference($referenceName, $reservationDetails);
+        $this->entityManager->persist($reservationDetails);
 
     }
 }
