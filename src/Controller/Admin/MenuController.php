@@ -63,56 +63,22 @@ class MenuController extends AbstractController
 
                 /** @var UploadedFile $uploadedFile */
                 $uploadedFile = $request->files->get('image');
-                if($uploadedFile) {
-                    $destination = $this->getParameter('kernel.project_dir') . '/public/img/menu/';
+                $errors = [];
 
-                    $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
-                    $newFilename = Urlizer::urlize($originalFilename) . '-' . uniqid() . '.' . $uploadedFile->guessExtension();
-
-                    $violations = $validator->validate(
-                        $uploadedFile,
-                        new Image([
-                            'maxSize' => '2M'
-                        ])
-                    );
-
-                    if ($violations->count() > 0) {
-                        /** @var ConstraintViolation $violation */
-                        $violation = $violations[0];
-                        $errors[] = 'Wrong image.';
-                        $this->addFlash('error', $violation->getMessage());
-                    }
-                }
-                if ($price < 0.01) {
-                    $errors[] = 'Price must be greater than 0.';
-                    $this->addFlash('error', 'Price must be greater than 0.');
+                if ($uploadedFile) {
+                    $this->ValidateImage($uploadedFile, $validator, $errors);
                 }
 
-                if ($name == '') {
-                    $errors[] = 'Name cannot be empty.';
-                    $this->addFlash('error', 'Name cannot be empty.');
-                }
+                $this->validateInput($price, $errors, $name);
 
                 if (empty($errors)) {
 
                     if ($special) {
 
-                        $menuOld = $menuRepo->findOneBy([
-                            'special' => $special
-                        ]);
-                        if($menuOld) {
-                            if ($menuOld->getId() != $menu->getId()) {
-                                $menuOld->setSpecial();
-                                $em->persist($menuOld);
-                                $em->flush();
-                            }
-                        }
+                        $this->replaceSpecial($menuRepo, $special, $menu, $em);
                     }
                     if($uploadedFile) {
-                        $uploadedFile->move(
-                            $destination,
-                            $newFilename
-                        );
+                        $newFilename = $this->moveUploadedFile($uploadedFile);
                         $menu->setImage($newFilename);
                     }
 
@@ -124,13 +90,13 @@ class MenuController extends AbstractController
 
                     $em->persist($menu);
                     $em->flush();
+
                     $this->logger->info('Menu item '.$menu->getId().' has been edited');
                     $this->addFlash('success', 'Menu item has been edited and saved.');
                     return new RedirectResponse($this->router->generate('app_admin_menu'));
                 }
-
-
             }
+
         $days = array(
             1 => 'Monday',
             2 => 'Tuesday',
@@ -141,12 +107,91 @@ class MenuController extends AbstractController
             7 => 'Sunday'
         );
 
-
         return $this->render('Admin/menuEdit.html.twig', [
             'menu' => $menu,
             'daysOfWeek' => $days,
             'categories' => array_map('current', $menuRepo->getCategories())
         ]);
+    }
+
+    /**
+     * @param UploadedFile $uploadedFile
+     * @param ValidatorInterface $validator
+     * @return array
+     */
+    public function ValidateImage(UploadedFile $uploadedFile, ValidatorInterface $validator, &$errors): array
+    {
+            $violations = $validator->validate(
+                $uploadedFile,
+                new Image([
+                    'maxSize' => '2M'
+                ])
+            );
+
+            if ($violations->count() > 0) {
+                /** @var ConstraintViolation $violation */
+                $violation = $violations[0];
+                $errors[] = 'Wrong image.';
+                $this->addFlash('error', $violation->getMessage());
+            }
+
+    }
+
+    /**
+     * @param float $price
+     * @param $errors
+     * @param $name
+     * @return mixed
+     */
+    public function validateInput(float $price, &$errors, $name)
+    {
+        if ($price < 0.01) {
+            $errors[] = 'Price must be greater than 0.';
+            $this->addFlash('error', 'Price must be greater than 0.');
+        }
+
+        if ($name == '') {
+            $errors[] = 'Name cannot be empty.';
+            $this->addFlash('error', 'Name cannot be empty.');
+        }
+
+    }
+
+    /**
+     * @param UploadedFile $uploadedFile
+     * @return string
+     */
+    public function moveUploadedFile(UploadedFile $uploadedFile): string
+    {
+        $destination = $this->getParameter('kernel.project_dir') . '/public/img/menu/';
+
+        $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+        $newFilename = Urlizer::urlize($originalFilename) . '-' . uniqid() . '.' . $uploadedFile->guessExtension();
+        $uploadedFile->move(
+            $destination,
+            $newFilename
+        );
+        return $newFilename;
+    }
+
+    /**
+     * @param $menuRepo
+     * @param int $special
+     * @param Menu $menu
+     * @param EntityManagerInterface $em
+     */
+    public function replaceSpecial($menuRepo, int $special, Menu $menu, EntityManagerInterface $em): void
+    {
+        $menuOld = $menuRepo->findOneBy([
+            'special' => $special
+        ]);
+        if ($menuOld) {
+            if ($menuOld->getId() != $menu->getId()) {
+                $menuOld->setSpecial();
+                $em->persist($menuOld);
+                $em->flush();
+            }
+        }
     }
 
 

@@ -19,7 +19,6 @@ class StatsController extends AbstractController
         $reservations = $reservationRepository->getMonthlyReservation(date('d-m-Y'));
         $earnings = $reservationDetailRepository->getMonthlyearnings(date('d-m-Y'));
 
-
         return $this->render('Admin/stats.html.twig', [
             'earnings'=>$earnings,
             'reservations'=>$reservations

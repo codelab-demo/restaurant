@@ -58,19 +58,8 @@ class TablesController extends AbstractController
         if($table) {
             if ($request->isMethod('POST')) {
 
-                if($name == '') {
-                $errors[] = 'Name cannot be empty.';
-                $this->addFlash('error','Name cannot be empty.');
-                }
+                $errors = $this->validateInput($name, $persons, $minPersons);
 
-                if($persons < $minPersons) {
-                    $errors[] = 'Minumum persons can be greater then max persons.';
-                    $this->addFlash('error','Minumum persons can be greater then max persons.');
-                }
-                if($minPersons < 1) {
-                    $errors[] = 'Minumum persons can\'t be less than 1.';
-                    $this->addFlash('error','Minumum persons can\'t be less than 1.');
-                }
                 if(empty($errors)) {
                     $table->setNumberOfPersons($persons);
                     $table->setMinNumberOfPersons($minPersons);
@@ -93,5 +82,29 @@ class TablesController extends AbstractController
             ]);
         }
         return new RedirectResponse($this->router->generate('app_admin_tables'));
+    }
+
+    /**
+     * @param $name
+     * @param int $persons
+     * @param int $minPersons
+     * @return array
+     */
+    public function validateInput($name, int $persons, int $minPersons): array
+    {
+        if ($name == '') {
+            $errors[] = 'Name cannot be empty.';
+            $this->addFlash('error', 'Name cannot be empty.');
+        }
+
+        if ($persons < $minPersons) {
+            $errors[] = 'Minumum persons can be greater then max persons.';
+            $this->addFlash('error', 'Minumum persons can be greater then max persons.');
+        }
+        if ($minPersons < 1) {
+            $errors[] = 'Minumum persons can\'t be less than 1.';
+            $this->addFlash('error', 'Minumum persons can\'t be less than 1.');
+        }
+        return $errors;
     }
 }

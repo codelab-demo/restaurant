@@ -79,15 +79,7 @@ class ReservationDetailsController extends AbstractController
                 $quantity = intVal($request->request->get('quantity'));
                 $price = floatval($request->request->get('price'));
 
-                $error = 0;
-                if($quantity < 1 || $quantity > 10) {
-                    $this->addFlash('error', 'You can change quantity to range 0..10');
-                    $error = 1;
-                }
-                if($price < 0.01  || $price > 100) {
-                    $this->addFlash('error', 'You can change price to range 0..100');
-                    $error = 1;
-                }
+                $error = $this->validateInput($quantity, $price);
 
                 // if data are correct, save it and return
                 if(!$error) {
@@ -133,15 +125,7 @@ class ReservationDetailsController extends AbstractController
                 $price = floatval($request->request->get('price'));
                 $item = intval($request->request->get('item'));
 
-                $error = 0;
-                if($quantity < 1 || $quantity > 10) {
-                    $this->addFlash('error', 'You can change quantity to range 0..10');
-                    $error = 1;
-                }
-                if($price < 0.01  || $price > 100) {
-                    $this->addFlash('error', 'You can change price to range 0..100');
-                    $error = 1;
-                }
+                $error = $this->validateInput($quantity, $price);
 
                 $menuItem = $menuRepo->find($item);
 
@@ -187,6 +171,24 @@ class ReservationDetailsController extends AbstractController
         ]);
     }
 
+    /**
+     * @param int $quantity
+     * @param float $price
+     * @return int
+     */
+    public function validateInput(int $quantity, float $price): int
+    {
+        $error = 0;
+        if ($quantity < 1 || $quantity > 10) {
+            $this->addFlash('error', 'You can change quantity to range 0..10');
+            $error = 1;
+        }
+        if ($price < 0.01 || $price > 100) {
+            $this->addFlash('error', 'You can change price to range 0..100');
+            $error = 1;
+        }
+        return $error;
+    }
 
 
 }

@@ -146,32 +146,17 @@ class ReservationsController extends AbstractController
         $persons = intVal($request->request->get('persons'));
         $name = filter_var($request->request->get('name'),FILTER_SANITIZE_STRING);
         $phone = filter_var($request->request->get('phone'),FILTER_SANITIZE_STRING);
-        if(\DateTime::createFromFormat('d-m-Y', $date) === false) {
-            $errors= true;
-            $logger->error('Admin: Wrong date during add reservation, received: '.$date);
-            $this->addFlash('error','Wrong date, please select correct one');
-        }
 
-        if(\DateTime::createFromFormat('H:i', $time) === false || !in_array($time,array('16:00','18:00', '20:00', '22:00'))) {
-            $errors = true;
-            $logger->error('Admin: Wrong time during add reservation, received: '.$time);
-            $this->addFlash('error','Wrong time, please select correct one');
-        }
+        $errors = $this->validateInput($date, $logger, $time);
 
         $tableRepo = $em->getRepository(Board::class);
         $tableInfo = $tableRepo->find($table);
 
         $reservationRepo = $em->getRepository(Reservation::class);
-        $reservation = $reservationRepo->findBy([
-            'date' => \DateTime::createFromFormat('d-m-Y', $date),
-            'time' => \DateTime::createFromFormat('H:i', $time),
-            'tableDetails' => $tableInfo
-        ]);
 
-        if($reservation) {
-            $errors[] = 'Table is already reserved at this time.';
-            $this->addFlash('error', 'Table is already reserved');
-        }
+        $reservation = $this->getReservation($reservationRepo, $date, $time, $tableInfo);
+
+        $this->checkIsTableReserved($reservation, $date, $time, $tableInfo, $errors);
 
         if($errors) {
             $logger->error('Reservation process aborted.');
@@ -215,5 +200,63 @@ class ReservationsController extends AbstractController
             'name' => $name,
             'phone'=> $phone
         ]);
+    }
+
+    /**
+     * @param $date
+     * @param LoggerInterface $logger
+     * @param $time
+     * @return bool
+     */
+    public function validateInput($date, LoggerInterface $logger, $time): bool
+    {
+        $errors = false;
+
+        if (\DateTime::createFromFormat('d-m-Y', $date) === false) {
+            $errors = true;
+            $logger->error('Admin: Wrong date during add reservation, received: ' . $date);
+            $this->addFlash('error', 'Wrong date, please select correct one');
+        }
+
+        if (\DateTime::createFromFormat('H:i', $time) === false || !in_array($time, array('16:00', '18:00', '20:00', '22:00'))) {
+            $errors = true;
+            $logger->error('Admin: Wrong time during add reservation, received: ' . $time);
+            $this->addFlash('error', 'Wrong time, please select correct one');
+        }
+        return $errors;
+    }
+
+    /**
+     * @param $reservationRepo
+     * @param $date
+     * @param $time
+     * @param $tableInfo
+     * @param $errors
+     * @return array
+     */
+    public function checkIsTableReserved($reservation, &$errors)
+    {
+        if ($reservation) {
+            $errors[] = 'Table is already reserved at this time.';
+            $this->addFlash('error', 'Table is already reserved');
+        }
+
+    }
+
+    /**
+     * @param $reservationRepo
+     * @param $date
+     * @param $time
+     * @param $tableInfo
+     * @return mixed
+     */
+    public function getReservation($reservationRepo, $date, $time, $tableInfo)
+    {
+        $reservation = $reservationRepo->findBy([
+            'date' => \DateTime::createFromFormat('d-m-Y', $date),
+            'time' => \DateTime::createFromFormat('H:i', $time),
+            'tableDetails' => $tableInfo
+        ]);
+        return $reservation;
     }
 }
