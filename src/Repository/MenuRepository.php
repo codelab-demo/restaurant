@@ -19,7 +19,8 @@ class MenuRepository extends ServiceEntityRepository
         parent::__construct($registry, Menu::class);
     }
 
-    public function findSpecials() {
+    public function findSpecials()
+    {
         return $this->createQueryBuilder('u')
             ->Where('u.special IS NOT NULL')
             ->orderBy('u.special', 'ASC')
@@ -27,11 +28,21 @@ class MenuRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function getCategories() {
+    public function getCategories()
+    {
         return $this->createQueryBuilder('u')
             ->select('u.category')
             ->groupBy('u.category')
             ->getQuery()
             ->getArrayResult();
+    }
+
+    public function getMenuItems($category)
+    {
+        return $this->findBy(
+            [
+                'category' => $category
+            ]
+        );
     }
 }

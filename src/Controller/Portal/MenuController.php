@@ -15,42 +15,14 @@ class MenuController extends AbstractController
     public function index(MenuRepository $menu): Response
     {
 
-        $soups = $menu->findBy(
-            [
-                'category' => 'Soups'
-            ]
-        );
-
-        $appetizers = $menu->findBy(
-            [
-                'category' => 'Appetizers'
-            ]
-        );
-
-        $mains = $menu->findBy(
-            [
-                'category' => 'Main dish'
-            ]
-        );
-
-        $vege = $menu->findBy(
-            [
-                'category' => 'Fish and vege'
-            ]
-        );
-        $deserts = $menu->findBy(
-            [
-                'category' => 'Deserts'
-            ]
-        );
-        $drinks = $menu->findBy(
-            [
-                'category' => 'Drinks'
-            ]
-        );
+        $soups = $menu->getMenuItems('Soups');
+        $appetizers = $menu->getMenuItems('Appetizers');
+        $mains = $menu->getMenuItems('Main dish');
+        $vege = $menu->getMenuItems('Fish and vege');
+        $deserts = $menu->getMenuItems('Deserts');
+        $drinks = $menu->getMenuItems('Drinks');
 
         $specials = $menu->findSpecials();
-
 
         return $this->render('\Portal\menu.html.twig', [
             'soups' => $soups,
