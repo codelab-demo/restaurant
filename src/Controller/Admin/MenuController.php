@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Menu;
 use App\Repository\MenuRepository;
+use App\Service\DaysHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Gedmo\Sluggable\Util\Urlizer;
 use Psr\Log\LoggerInterface;
@@ -97,15 +98,7 @@ class MenuController extends AbstractController
                 }
             }
 
-        $days = array(
-            1 => 'Monday',
-            2 => 'Tuesday',
-            3 => 'Wednesday',
-            4 => 'Thursday',
-            5 => 'Friday',
-            6 => 'Saturday',
-            7 => 'Sunday'
-        );
+        $days = DaysHelper::daysOfWeek();
 
         return $this->render('Admin/menuEdit.html.twig', [
             'menu' => $menu,
